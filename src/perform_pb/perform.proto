@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package perform;
+
+option go_package = "src/pb;perform_pb";
+
+service PerformService {
+  rpc StartPerform (StartMessage) returns (CmRespMessage);
+  rpc StopPerform (EmptyMessage) returns (PerformMessage);
+  rpc CollectStats (EmptyMessage) returns (PerformMessage);
+  rpc KeepAlive (EmptyMessage) returns (ExecutorStatus);
+}
+
+message StartMessage {
+  bytes json = 1;
+}
+
+message ExecutorStatus {
+  Status status = 1;  // 使用枚举类型表示状态
+}
+
+enum Status {
+  STATUS_RUNNING = 0;  // 运行中
+  STATUS_IDLE = 1;     // 空闲
+  STATUS_ERROR = 2;    // 异常
+}
+
+message CmRespMessage {
+  int32 code = 1;
+  bytes message = 2;
+}
+
+message EmptyMessage {
+}
+
+message PerformMessage {
+  int32 code = 1;
+  PerformStats stats = 2;
+}
+
+message PerformStats {
+  int64 err_count = 1;
+  int64 send_count = 2;
+  int64 send_bytes = 3;
+  int64 recv_bytes = 4;
+  int64 duration = 5;
+  repeated Record latency = 6;
+  repeated bytes err_msgs = 7;
+}
+
+
+message Record {
+  int64 key = 1;
+  int64 value = 2;
+}
