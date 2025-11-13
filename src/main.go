@@ -113,23 +113,20 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGALRM)
 	go func() {
-		for {
-			select {
-			case si := <-sigs:
-				pressCount++
-				if pressCount > 1 {
-					logger.Warning("recev signal %s, force to exit\n", si)
-					cancel()
-					return
-				} else {
-					logger.Info("recev signal %s, waiting to exit, press Ctr + c force exit\n", si)
-					benchmarkRunner.Stop()
-					err := reg.Unregister()
-					if err != nil {
-						logger.Error("Unregister with err: %v\n", err)
-					}
-					service.StopGrpcServer()
+		for sig := range sigs {
+			pressCount++
+			if pressCount > 1 {
+				logger.Warning("recev signal %s, force to exit\n", sig)
+				cancel()
+				return
+			} else {
+				logger.Info("recev signal %s, waiting to exit, press Ctr + c force exit\n", sig)
+				benchmarkRunner.Stop()
+				err := reg.Unregister()
+				if err != nil {
+					logger.Error("Unregister with err: %v\n", err)
 				}
+				service.StopGrpcServer()
 			}
 		}
 	}()
